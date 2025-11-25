@@ -9,7 +9,7 @@ jobs:
             - name: Checkout Code
               uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
             - name: Setup Kotlin
-              uses: ./.github/actions/setup-kotlin
+              uses: LucasRius/lrios-ci-complete/.github/actions/setup-kotlin
             - name: Lint Kotlin
               run: |
                 chmod +x gradlew
