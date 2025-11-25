@@ -25,7 +25,7 @@ jobs:
               run: |
                 chmod +x gradlew
                 ./gradlew ktlintCheck
-            - name: Setup  Scala
+            - name: Lint  Scala
               if: inputs.jvm_language == 'sbt'
               id: setup-scala
               run: |
