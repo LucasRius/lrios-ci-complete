@@ -1,0 +1,38 @@
+name: Setup Kotlin
+description: "Realiza o setup do Kotlin"
+
+inputs:
+  jdk_version:
+    description: 'Versao do JDK. Valor padrao: 21'
+    required: false
+    default: '21'
+  jdk_distribution:
+    description: 'Versao da distribuicao. Valor padrao: temurin '
+    required: false
+    default: 'temurin'
+  jdk_cache:
+    description: 'Sistema de compilacao e cache. Valor padrao: gradle '
+    required: false
+    default: 'gradle'
+  jdk_build_command:
+    description: 'Comando de build. Valor padrao para gradle: ./gradlew --no-daemon -x check build '
+    required: false
+    default: './gradlew --no-daemon -x check build'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+      with:
+        path: |
+          **/*.jar
+          **/*.tgz
+        key: ${{ runner.os }}-jar-${{ github.run_number }}
+
+    - name: Setup Kotlin
+      uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+      with:
+        java-version: ${{inputs.jdk_version }}
+        distribution: ${{ inputs.jdk_distribution }}
+        cache: ${{ inputs.jdk_cache }}
