@@ -2,15 +2,31 @@ name: CI  Pipeline
 
 on:
     workflow_call:
+        inputs:
+            jvm_language:
+                type: string
+
+
 jobs: 
     linting:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout Code
               uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
-            - name: Setup Kotlin
+            - name: Setup  JVM
+              id: setup-jvm
               uses: LucasRius/lrios-ci-complete/.github/actions/setup-kotlin@main
+              with:
+                jdk_cache: ${{ inputs.jvm_language }}
             - name: Lint Kotlin
+              if: inputs.jvm_language == 'kotlin'
+              id: lint-kotlin
               run: |
                 chmod +x gradlew
                 ./gradlew ktlintCheck
+            - name: Setup  Scala
+              if: inputs.jvm_language == 'scala'
+              id: setup-scala
+              run: |
+                sbt scalafmtCheckAll
+            

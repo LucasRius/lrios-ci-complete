@@ -1,5 +1,5 @@
-name: Setup Kotlin
-description: "Realiza o setup do Kotlin"
+name: Setup JVM
+description: "Realiza o setup do Kotlin ou Scala"
 
 inputs:
   jdk_version:
@@ -11,13 +11,12 @@ inputs:
     required: false
     default: 'temurin'
   jdk_cache:
-    description: 'Sistema de compilacao e cache. Valor padrao: gradle '
-    required: false
-    default: 'gradle'
+    description: 'Sistema de compilacao e cache. Valores devem ser: gradle ou sbt'
+    required: true
   jdk_build_command:
-    description: 'Comando de build. Valor padrao para gradle: ./gradlew --no-daemon -x check build '
+    description: 'Comando de build. Valor padrao para gradle: ./gradlew --no-daemon -x check build OU ./sbtx clean "Universal / packageZipTarball"'
     required: false
-    default: './gradlew --no-daemon -x check build'
+    default: 'aa'
 
 runs:
   using: "composite"
@@ -28,9 +27,9 @@ runs:
         path: |
           **/*.jar
           **/*.tgz
-        key: ${{ runner.os }}-jar-${{ github.run_number }}
+        key: ${{ runner.os }}-jar-${{ github.run_number }} 
 
-    - name: Setup Kotlin
+    - name: Setup ${{ inputs.jdk_cache }}  JVM 
       uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
       with:
         java-version: ${{inputs.jdk_version }}
