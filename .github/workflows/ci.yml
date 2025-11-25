@@ -4,6 +4,7 @@ on:
     workflow_call:
         inputs:
             jvm_language:
+                description: 'Escolha entre gradle para Kotlin e sbt para Scala'
                 type: string
 
 
@@ -15,7 +16,7 @@ jobs:
               uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
             - name: Setup  JVM
               id: setup-jvm
-              uses: LucasRius/lrios-ci-complete/.github/actions/setup-kotlin@main
+              uses: LucasRius/lrios-ci-complete/.github/actions/setup-jvm@main
               with:
                 jdk_cache: ${{ inputs.jvm_language }}
             - name: Lint Kotlin
