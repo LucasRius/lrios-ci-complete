@@ -20,13 +20,13 @@ jobs:
               with:
                 jdk_cache: ${{ inputs.jvm_language }}
             - name: Lint Kotlin
-              if: inputs.jvm_language == 'kotlin'
+              if: inputs.jvm_language == 'gradle'
               id: lint-kotlin
               run: |
                 chmod +x gradlew
                 ./gradlew ktlintCheck
             - name: Setup  Scala
-              if: inputs.jvm_language == 'scala'
+              if: inputs.jvm_language == 'sbt'
               id: setup-scala
               run: |
                 sbt scalafmtCheckAll
