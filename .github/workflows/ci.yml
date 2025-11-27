@@ -7,7 +7,7 @@ on:
         description: "Escolha entre kotlin, scala, node"
         type: string
       build_tool:
-        description: "Escolha o build da sua aplicacao."
+        description: "Escolha o build da sua aplicacao. gradle, sbt, yarn"
         type: string
       lint_pre_hook:
         description: "Script Pre Hook do linting"
