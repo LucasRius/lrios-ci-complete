@@ -25,14 +25,14 @@ on:
 jobs:
   linting-kotlin:
     if: ${{ inputs.language }} == 'kotlin'
-    uses: LucasRius/lrios-ci-complete/.github//workflows/ci-lint-kotlin.yml
+    uses: LucasRius/lrios-ci-complete/.github/workflows/ci-lint-kotlin.yml
     with:
       build_tool: ${{ inputs.build_tool }}
       lint_pre_hook: ${{ inputs.lint_pre_hook }}
       lint_post_hook: ${{ inputs.lint_post_hook }}
   linting-scala:
     if: ${{ inputs.language }} == 'scala'
-    uses: LucasRius/lrios-ci-complete/.github//workflows/ci-lint-scala.yml
+    uses: LucasRius/lrios-ci-complete/.github/workflows/ci-lint-scala.yml
     with:
       build_tool: ${{ inputs.build_tool }}
       lint_pre_hook: ${{ inputs.lint_pre_hook }}
