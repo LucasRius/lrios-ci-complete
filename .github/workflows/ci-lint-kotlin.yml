@@ -54,7 +54,7 @@ jobs:
               run: |
                   chmod +x gradlew
                   ./gradlew ktlintCheck
-              continue-on-error: ${{ steps.lint-bypass-var.outputs.action_enabled }}
+              continue-on-error: ${{ fromJson(steps.lint-bypass-var.outputs.action_enabled) }}
             - name: Post Hook Lint
               run: |
                   ${{ inputs.lint_post_hook }}
