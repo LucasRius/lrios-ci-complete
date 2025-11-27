@@ -9,9 +9,11 @@ on:
             lint_pre_hook:
                 description: "Script Pre Hook do linting"
                 type: string
+                default: 'echo "pre hook lint nao utilizado"'
             lint_post_hook:
                 description: "Script Post Hook do linting"
                 type: string
+                default: 'echo "post hook lint nao utilizado"'
             toogle_lint_bypass:
                 type: string
                 description: "Toogle para forcar ou nao a quebra do lint"
