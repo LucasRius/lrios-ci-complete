@@ -1,0 +1,61 @@
+name: CI  LINT Pipeline Scala
+
+on:
+    workflow_call:
+        inputs:
+            build_tool:
+                description: 'Escolha o build da sua aplicacao.'
+                type: string
+            lint_pre_hook:
+                description: 'Script Pre Hook do linting'
+                type: string
+            lint_post_hook:
+                description: 'Script Post Hook do linting'
+                type: string
+            toogle_lint_bypass:
+                type: string
+                description: "Toogle para forcar ou nao a quebra do lint"
+                default: "false"
+
+jobs:
+    linting:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
+            - name: Setup  Java
+              id: action_setup_java
+              uses: LucasRius/lrios-ci-complete/.github/actions/setup-java@main
+              with:
+                  jdk_cache: ${{ inputs.build_tool }}
+            - name: Lint ByPass
+              id: lint-bypass-var
+              run: |
+                  TOGGLE_LINT_BYPASS="${{ vars.TOGGLE_LINT_BYPASS }}"
+                  PARAM_VALUE="${{ inputs.toogle_lint_bypass }}"    
+
+                  if [ "$TOGGLE_LINT_BYPASS" == "true" ] && [ "$PARAM_VALUE" == "true" ]; then
+                      RESULTADO="true"
+                  else
+                      RESULTADO="false"
+                  fi
+                  echo "action_enabled=$RESULTADO" >> $GITHUB_OUTPUT
+
+                  echo "Status da TOGGLE_LINT_BYPASS: $TOGGLE_LINT_BYPASS"
+                  echo "Status da Variável Parametrizável: $PARAM_VALUE"
+                  echo "Variável de Saída 'action_enabled': $RESULTADO"
+
+            - name: Pre Hook Lint
+              run: |
+                  ${{ inputs.lint_pre_hook }}
+            - name: Lint Scala with SBT
+              if: ${{ inputs.build_tool  == 'sbt' }}
+              id: lint-kotlin
+              run: |
+                sbt scalafmtCheckAll
+              continue-on-error: ${{ steps.lint-bypass-var.outputs.action_enabled }}
+            - name: Post Hook Lint
+              run: |
+                  ${{ inputs.lint_post_hook }}
+
+

@@ -3,9 +3,24 @@ name: CI  Pipeline
 on:
     workflow_call:
         inputs:
-            jvm_language:
-                description: 'Escolha entre gradle para Kotlin e sbt para Scala'
+            language:
+                description: 'Escolha entre kotlin, scala, node'
                 type: string
+            build_tool:
+                description: 'Escolha o build da sua aplicacao.'
+                type: string
+            lint_pre_hook:
+                description: 'Script Pre Hook do linting'
+                type: string
+                default: 'echo "pre hook lint nao utilizado"'
+            lint_post_hook:
+                description: 'Script Post Hook do linting'
+                type: string
+                default: 'echo "post hook lint nao utilizado"'
+            toogle_lint_bypass:
+                type: string
+                description: 'Toogle para forcar ou nao a quebra do lint'
+                default: 'false'
 
 
 jobs: 
@@ -14,20 +29,21 @@ jobs:
         steps:
             - name: Checkout Code
               uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
-            - name: Setup  JVM
-              id: setup-jvm
-              uses: LucasRius/lrios-ci-complete/.github/actions/setup-jvm@main
+            - name: Linting Kotlin Code 
+              if: ${{ inputs.language }} == 'kotlin'
+              id: ci_lint_kotlin
+              uses: ./.github/workflows/ci-lint-kotlin.yml@main
               with:
-                jdk_cache: ${{ inputs.jvm_language }}
-            - name: Lint Kotlin
-              if: inputs.jvm_language == 'gradle'
-              id: lint-kotlin
-              run: |
-                chmod +x gradlew
-                ./gradlew ktlintCheck
-            - name: Lint  Scala
-              if: inputs.jvm_language == 'sbt'
-              id: setup-scala
-              run: |
-                sbt scalafmtCheckAll
+                build_tool: ${{ inputs.build_tool }}
+                lint_pre_hook: ${{ inputs.lint_pre_hook }}
+                lint_post_hook: ${{ inputs.lint_post_hook }}
+            - name: Linting Scala Code 
+              if: ${{ inputs.language }} == 'scala'
+              id: ci_lint_scala
+              uses: ./.github/workflows/ci-lint-scala.yml@main
+              with:
+                build_tool: ${{ inputs.build_tool }}
+                lint_pre_hook: ${{ inputs.lint_pre_hook }}
+                lint_post_hook: ${{ inputs.lint_post_hook }}
+
             
