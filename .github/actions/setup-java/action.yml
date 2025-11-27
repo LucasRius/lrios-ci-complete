@@ -1,4 +1,4 @@
-name: Setup JVM
+name: Setup Java
 description: "Realiza o setup do Kotlin ou Scala"
 
 inputs:
