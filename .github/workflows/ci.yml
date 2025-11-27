@@ -32,7 +32,7 @@ jobs:
             - name: Linting Kotlin Code 
               if: ${{ inputs.language }} == 'kotlin'
               id: ci_lint_kotlin
-              uses: ./.github/workflows/ci-lint-kotlin.yml@main
+              uses: LucasRius/lrios-ci-complete/.github/workflows/ci-lint-kotlin.yml@main
               with:
                 build_tool: ${{ inputs.build_tool }}
                 lint_pre_hook: ${{ inputs.lint_pre_hook }}
@@ -40,7 +40,7 @@ jobs:
             - name: Linting Scala Code 
               if: ${{ inputs.language }} == 'scala'
               id: ci_lint_scala
-              uses: ./.github/workflows/ci-lint-scala.yml@main
+              uses: LucasRius/lrios-ci-complete/.github/workflows/ci-lint-scala.yml@main
               with:
                 build_tool: ${{ inputs.build_tool }}
                 lint_pre_hook: ${{ inputs.lint_pre_hook }}
