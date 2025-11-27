@@ -53,7 +53,7 @@ jobs:
               id: lint-kotlin
               run: |
                 sbt scalafmtCheckAll
-              continue-on-error: ${{ steps.lint-bypass-var.outputs.action_enabled }}
+              continue-on-error: ${{ fromJson(steps.lint-bypass-var.outputs.action_enabled) }}
             - name: Post Hook Lint
               run: |
                   ${{ inputs.lint_post_hook }}
