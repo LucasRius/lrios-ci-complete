@@ -3,9 +3,17 @@ name: CI  Pipeline
 on:
   workflow_call:
     inputs:
+      working_directory:
+        description: 'Diretorio de trabalho padrao'
+        type: string
+        default: '.'
       language:
         description: "Escolha entre kotlin, scala, node"
         type: string
+      language_version:
+        description: "Escolha entre kotlin, scala, node"
+        type: string
+        default: '21'
       build_tool:
         description: "Escolha o build da sua aplicacao. gradle, sbt, yarn"
         type: string
@@ -17,10 +25,21 @@ on:
         description: "Script Post Hook do linting"
         type: string
         default: 'echo "post hook lint nao utilizado"'
-      toogle_lint_bypass:
+      lint_bypass:
         type: string
         description: "Toogle para forcar ou nao a quebra do lint"
         default: "false"
+      cache_path:
+        type: string
+        description: "Path to cache"
+      always-auth:
+        description: ''
+        type: string
+        default: 'false'
+      lint-node-command:
+        description: ''
+        type: string
+        default: 'lint'
 
 jobs:
   linting-kotlin:
@@ -30,7 +49,9 @@ jobs:
       build_tool: ${{ inputs.build_tool }}
       lint_pre_hook: ${{ inputs.lint_pre_hook }}
       lint_post_hook: ${{ inputs.lint_post_hook }}
-      toogle_lint_bypass: ${{ inputs.toogle_lint_bypass }}
+      lint_bypass: ${{ inputs.lint_bypass }}
+      jdk_version: ${{ inputs.language_version }}
+      cache_path: ${{ inputs.cache_path }}
   linting-scala:
     if: ${{ inputs.language  == 'scala' }}
     uses: LucasRius/lrios-ci-complete/.github/workflows/ci-lint-scala.yml@main
@@ -38,4 +59,6 @@ jobs:
       build_tool: ${{ inputs.build_tool }}
       lint_pre_hook: ${{ inputs.lint_pre_hook }}
       lint_post_hook: ${{ inputs.lint_post_hook }}
-      toogle_lint_bypass: ${{ inputs.toogle_lint_bypass }}
+      lint_bypass: ${{ inputs.lint_bypass }}
+      jdk_version: ${{ inputs.language_version }}
+      cache_path: ${{ inputs.cache_path }}

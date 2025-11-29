@@ -1,0 +1,85 @@
+name: Setup Node
+description: "Realiza o setup do NPM, Yarn ou semelhante"
+
+inputs:
+  working_directory:
+    description: 'Diretorio de trabalho padrao'
+    required: false
+    default: '.'
+  caching:
+    description: 'Whether to cache dependencies or not'
+    required: false
+    default: 'true'
+  package-manager:
+    description: 'Package manager. padrao: yarn'
+    required: false
+    default: 'yarn'
+  node-version:
+    description: 'Versao do Node. padrao: 21'
+    required: false
+    default: '21'
+  lint-command:
+    description: 'Comando do lint. padrao: lint'
+    required: false
+    default: 'lint'
+  install-args:
+    description: 'Argumentos extras para instalacao.'
+    required: false
+    default: ''
+  registry_url:
+    description: 'URL do registry privado. Opcional'
+    required: false
+    default: 'https://npm.pkg.github.com'
+  scope:
+    description: 'Scope para registry privado. Opcional'
+    required: false
+    default: '@caju-beneficios'
+  cache_path:
+    required: true
+    description: "Path to cache"
+  always-auth:
+    description: ''
+    required: false
+    default: 'false'
+  
+runs:
+  using: composite
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: ${{ inputs.package-manager }}
+        cache-dependency-path: ${{ inputs.lint_cache_path }}
+        always-auth: ${{ inputs.always_auth }}
+        registry-url: ${{ inputs.registry_url }}
+        scope: ${{ inputs.scope }}
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.READ_PRIVATE_PACKAGES_TOKEN }}
+    - name: Cache dependencies
+      if: inputs.caching == 'true'
+      id: cache
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+      with:
+        path: node_modules
+        key: deps-node-modules-${{ hashFiles('**/*lock*') }}
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: |
+        case "${{ inputs.package-manager }}" in
+          npm)
+            npm ci ${{ inputs.install-args }}
+            ;;
+          yarn)
+            yarn install ${{ inputs.install-args }}
+            ;;
+          pnpm)
+            pnpm install ${{ inputs.install-args }}
+          *)
+            echo "Package nao suportado: ${{ inputs.package-manager }}"
+            exit 1
+            ;;
+        esac
+    

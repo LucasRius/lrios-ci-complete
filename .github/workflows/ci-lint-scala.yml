@@ -12,10 +12,13 @@ on:
             lint_post_hook:
                 description: 'Script Post Hook do linting'
                 type: string
-            toogle_lint_bypass:
+            lint_bypass:
                 type: string
                 description: "Toogle para forcar ou nao a quebra do lint"
                 default: "false"
+            cache_path:
+                type: string
+                description: "Path to cache"
 
 jobs:
     linting:
@@ -28,11 +31,12 @@ jobs:
               uses: LucasRius/lrios-ci-complete/.github/actions/setup-java@main
               with:
                   jdk_cache: ${{ inputs.build_tool }}
+                  cache_path: ${{ inputs.cache_path }}
             - name: Lint ByPass
               id: lint-bypass-var
               run: |
                   TOGGLE_LINT_BYPASS="${{ vars.TOGGLE_LINT_BYPASS }}"
-                  PARAM_VALUE="${{ inputs.toogle_lint_bypass }}"    
+                  PARAM_VALUE="${{ inputs.lint_bypass }}"    
 
                   if [ "$TOGGLE_LINT_BYPASS" == "true" ] && [ "$PARAM_VALUE" == "true" ]; then
                       RESULTADO="true"

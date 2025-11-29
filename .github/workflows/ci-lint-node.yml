@@ -1,4 +1,5 @@
-name: CI  LINT Pipeline kotlin
+name: CI  LINT Pipeline Node
+
 
 on:
     workflow_call:
@@ -21,7 +22,14 @@ on:
             cache_path:
                 type: string
                 description: "Path to cache"
-
+            lint-node-command:
+                description: ''
+                type: string
+                default: 'lint'
+            working_directory:
+                description: 'Diretorio de trabalho padrao'
+                type: string
+                default: '.'
 jobs:
     linting:
         runs-on: ubuntu-latest
@@ -30,7 +38,7 @@ jobs:
               uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
             - name: Setup  Java
               id: action_setup_java
-              uses: LucasRius/lrios-ci-complete/.github/actions/setup-java@main
+              uses: LucasRius/lrios-ci-complete/.github/actions/setup-node@main
               with:
                   jdk_cache: ${{ inputs.build_tool }}
                   cache_path: ${{ inputs.cache_path }}
@@ -50,16 +58,30 @@ jobs:
                   echo "Status da TOGGLE_LINT_BYPASS: $TOGGLE_LINT_BYPASS"
                   echo "Status da Variável Parametrizável: $PARAM_VALUE"
                   echo "Variável de Saída 'action_enabled': $RESULTADO"
-
             - name: Pre Hook Lint
               run: |
                   ${{ inputs.lint_pre_hook }}
-            - name: Lint Kotlin with Gradle
-              if: ${{ inputs.build_tool  == 'gradle' }}
-              id: lint-kotlin
+            - name: Lint Node
+              if: ${{ inputs.build_tool  == 'yarn'  || inputs.build_tool  == 'npm' || inputs.build_tool  == 'pnpm'}}
+              id: lint-node
+              shell: bash
+              working-directory: ${{ inputs.working_directory }}
               run: |
-                  chmod +x gradlew
-                  ./gradlew ktlintCheck
+                case "${{ inputs.build_tool}}" in
+                npm)
+                    npm  ${{ inputs.lint-node-command}}
+                    ;;
+                yarn)
+                    yarn  ${{ inputs.lint-node-command }}
+                    ;;
+                pnpm)
+                    pnpm  ${{ inputs.lint-node-command }}
+                *)
+                    echo "Package nao suportado: ${{ inputs.build_tool}}"
+                    exit 1
+                    ;;
+                esac
+    
               continue-on-error: ${{ fromJson(steps.lint-bypass-var.outputs.action_enabled) }}
             - name: Post Hook Lint
               run: |

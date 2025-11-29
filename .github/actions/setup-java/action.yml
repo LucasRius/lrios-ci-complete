@@ -13,10 +13,9 @@ inputs:
   jdk_cache:
     description: 'Sistema de compilacao e cache. Valores devem ser: gradle ou sbt'
     required: true
-  jdk_build_command:
-    description: 'Comando de build. Valor padrao para gradle: ./gradlew --no-daemon -x check build OU ./sbtx clean "Universal / packageZipTarball"'
-    required: false
-    default: 'aa'
+  cache_path:
+    required: true
+    description: "Path to cache"
 
 runs:
   using: "composite"
@@ -24,9 +23,7 @@ runs:
     - name: Cache
       uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
       with:
-        path: |
-          **/*.jar
-          **/*.tgz
+        path: ${{ inputs.cache_path }}
         key: ${{ runner.os }}-jar-${{ github.run_number }} 
 
     - name: Setup ${{ inputs.jdk_cache }}  JVM 
