@@ -35,8 +35,8 @@ jobs:
         steps:
             - name: Checkout Code
               uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
-            - name: Setup  Java
-              id: action_setup_java
+            - name: Setup  Node
+              id: action_setup_node
               uses: LucasRius/lrios-ci-complete/.github/actions/setup-node@main
               with:
                   jdk_cache: ${{ inputs.build_tool }}
