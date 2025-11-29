@@ -1,6 +1,5 @@
 name: CI  LINT Pipeline Node
 
-
 on:
     workflow_call:
         inputs:
@@ -23,13 +22,13 @@ on:
                 type: string
                 description: "Path to cache"
             lint-node-command:
-                description: ''
+                description: ""
                 type: string
-                default: 'lint'
+                default: "lint"
             working_directory:
-                description: 'Diretorio de trabalho padrao'
+                description: "Diretorio de trabalho padrao"
                 type: string
-                default: '.'
+                default: "."
 jobs:
     linting:
         runs-on: ubuntu-latest
@@ -67,21 +66,21 @@ jobs:
               shell: bash
               working-directory: ${{ inputs.working_directory }}
               run: |
-                case "${{ inputs.build_tool}}" in
-                npm)
-                    npm  ${{ inputs.lint-node-command}}
-                    ;;
-                yarn)
-                    yarn  ${{ inputs.lint-node-command }}
-                    ;;
-                pnpm)
-                    pnpm  ${{ inputs.lint-node-command }}
-                *)
-                    echo "Package nao suportado: ${{ inputs.build_tool}}"
-                    exit 1
-                    ;;
-                esac
-    
+                  case "${{ inputs.build_tool}}" in
+                  npm)
+                      npm  ${{ inputs.lint-node-command}}
+                      ;;
+                  yarn)
+                      yarn  ${{ inputs.lint-node-command }}
+                      ;;
+                  pnpm)
+                      pnpm  ${{ inputs.lint-node-command }}
+                  *)
+                      echo "Package nao suportado: ${{ inputs.build_tool}}"
+                      exit 1
+                      ;;
+                  esac
+
               continue-on-error: ${{ fromJson(steps.lint-bypass-var.outputs.action_enabled) }}
             - name: Post Hook Lint
               run: |
