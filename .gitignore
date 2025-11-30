@@ -1,2 +1,7 @@
 .vars
 .secrets
+*.txt
+node_modules
+*lock*
+*.js
+*.json

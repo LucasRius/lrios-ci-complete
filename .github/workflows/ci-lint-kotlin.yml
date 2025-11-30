@@ -21,6 +21,10 @@ on:
             cache_path:
                 type: string
                 description: "Path to cache"
+            language_version:
+                description: "Versao"
+                type: string
+                default: '21'
 
 jobs:
     linting:
@@ -34,6 +38,7 @@ jobs:
               with:
                   jdk_cache: ${{ inputs.build_tool }}
                   cache_path: ${{ inputs.cache_path }}
+                  jdk_version: ${{ inputs.language_version }}
             - name: Lint ByPass
               id: lint-bypass-var
               run: |

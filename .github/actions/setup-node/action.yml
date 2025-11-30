@@ -2,6 +2,10 @@ name: Setup Node
 description: "Realiza o setup do NPM, Yarn ou semelhante"
 
 inputs:
+  node_token:
+      description: "Versao"
+      required: false
+      default: ''
   working_directory:
     description: 'Diretorio de trabalho padrao'
     required: false
@@ -12,8 +16,7 @@ inputs:
     default: 'true'
   package-manager:
     description: 'Package manager. padrao: yarn'
-    required: false
-    default: 'yarn'
+    required: true
   node-version:
     description: 'Versao do Node. padrao: 21'
     required: false
@@ -35,9 +38,9 @@ inputs:
     required: false
     default: '@caju-beneficios'
   cache_path:
-    required: true
+    required: false
     description: "Path to cache"
-  always-auth:
+  always_auth:
     description: ''
     required: false
     default: 'false'
@@ -45,17 +48,18 @@ inputs:
 runs:
   using: composite
   steps:
+
     - name: Setup Node
       uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903
       with:
         node-version: ${{ inputs.node-version }}
-        cache: ${{ inputs.package-manager }}
-        cache-dependency-path: ${{ inputs.lint_cache_path }}
+        cache: ${{ inputs.build_tool }}
+        cache-dependency-path: ${{ inputs.cache_path }}
         always-auth: ${{ inputs.always_auth }}
         registry-url: ${{ inputs.registry_url }}
         scope: ${{ inputs.scope }}
       env:
-        NODE_AUTH_TOKEN: ${{ secrets.READ_PRIVATE_PACKAGES_TOKEN }}
+        NODE_AUTH_TOKEN: ${{ inputs.node_token }}
     - name: Cache dependencies
       if: inputs.caching == 'true'
       id: cache
@@ -70,16 +74,19 @@ runs:
       run: |
         case "${{ inputs.package-manager }}" in
           npm)
+            echo "Package suportado: ${{ inputs.package-manager }}"
             npm ci ${{ inputs.install-args }}
             ;;
           yarn)
+            echo "Package suportado: ${{ inputs.package-manager }}"
             yarn install ${{ inputs.install-args }}
             ;;
           pnpm)
+            echo "Package suportado: ${{ inputs.package-manager }}"
             pnpm install ${{ inputs.install-args }}
+            ;;
           *)
             echo "Package nao suportado: ${{ inputs.package-manager }}"
-            exit 1
             ;;
         esac
     

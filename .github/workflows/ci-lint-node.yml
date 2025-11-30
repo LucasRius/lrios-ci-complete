@@ -21,14 +21,28 @@ on:
             cache_path:
                 type: string
                 description: "Path to cache"
+                default: ''
             lint-node-command:
                 description: ""
                 type: string
-                default: "lint"
+                default: 'lint'
             working_directory:
                 description: "Diretorio de trabalho padrao"
                 type: string
                 default: "."
+            language_version:
+                description: "Versao"
+                type: string
+                default: '21'
+            node_token:
+                description: "Versao"
+                type: string
+                default: ''
+            caching:
+                description: "Versao"
+                type: string
+                default: 'true'               
+
 jobs:
     linting:
         runs-on: ubuntu-latest
@@ -37,10 +51,13 @@ jobs:
               uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
             - name: Setup  Node
               id: action_setup_node
-              uses: LucasRius/lrios-ci-complete/.github/actions/setup-node@main
+              uses: ./.github/actions/setup-node
               with:
-                  jdk_cache: ${{ inputs.build_tool }}
+                  node-version: ${{ inputs.language_version }}
+                  package-manager: ${{ inputs.build_tool }}
+                  caching: ${{ inputs.caching }}
                   cache_path: ${{ inputs.cache_path }}
+                  node_token: ${{ secrets.READ_PRIVATE_PACKAGES_TOKEN  || ''}}
             - name: Lint ByPass
               id: lint-bypass-var
               run: |
@@ -68,13 +85,14 @@ jobs:
               run: |
                   case "${{ inputs.build_tool}}" in
                   npm)
-                      npm  ${{ inputs.lint-node-command}}
+                      npm run  ${{ inputs.lint-node-command}}
                       ;;
                   yarn)
                       yarn  ${{ inputs.lint-node-command }}
                       ;;
                   pnpm)
-                      pnpm  ${{ inputs.lint-node-command }}
+                      pnpm run ${{ inputs.lint-node-command }}
+                      ;;
                   *)
                       echo "Package nao suportado: ${{ inputs.build_tool}}"
                       exit 1
