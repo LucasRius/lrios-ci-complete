@@ -62,3 +62,17 @@ jobs:
       lint_bypass: ${{ inputs.lint_bypass }}
       language_version: ${{ inputs.language_version }}
       cache_path: ${{ inputs.cache_path }}
+  build-and-push-kotlin:
+    name: Build e Envio para Docker Hub
+    # Chama o workflow reutilizável
+    uses: LucasRius/lrios-ci-complete/.github/workflows/ci-build-and-push-koltin.yml@main
+
+    with:
+      # Passa o nome da imagem e a versão do Java como inputs
+      language_version: ${{ inputs.language_version }}
+      image_name: 'lucasrios92/teste-kotlin' # <<-- MUDAR AQUI
+
+    secrets:
+      # Passa as credenciais do Docker Hub como secrets
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
