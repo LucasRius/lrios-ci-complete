@@ -50,7 +50,7 @@ jobs:
       lint_pre_hook: ${{ inputs.lint_pre_hook }}
       lint_post_hook: ${{ inputs.lint_post_hook }}
       lint_bypass: ${{ inputs.lint_bypass }}
-      jdk_version: ${{ inputs.language_version }}
+      language_version: ${{ inputs.language_version }}
       cache_path: ${{ inputs.cache_path }}
   linting-scala:
     if: ${{ inputs.language  == 'scala' }}
