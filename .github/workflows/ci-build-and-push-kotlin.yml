@@ -36,7 +36,9 @@ jobs:
           cache: 'gradle'
 
       - name: Build da Aplicação Kotlin (Gradle)
-        run: ./gradlew clean build --no-daemon
+        run: | 
+          chmod +x gradlew
+          ./gradlew clean build --no-daemon
         # Executa o build da sua aplicação Kotlin para gerar o JAR/executável
 
       - name: Login no Docker Hub
