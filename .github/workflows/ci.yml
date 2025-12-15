@@ -91,6 +91,8 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   deploy-gitops:
     name: Trigger GitOps Update
+    permissions:
+      contents: write
     needs: build-and-push-kotlin
     uses: LucasRius/lrios-ci-complete/.github/workflows/ci-deploy-gitops-kotlin.yml@main
     with:
