@@ -1,4 +1,4 @@
-# Caminho: .github/workflows/reusable-deploy.yaml (No seu repo central/template)
+# Caminho: .github/workflows/ci-deploy-gitops-kotlin.yml
 name: Reusable GitOps Update (DockerHub)
 
 on:
@@ -15,7 +15,7 @@ on:
       image_tag:
         required: true
         type: string
-        description: Tag da imagem Docker recém-construída'
+        description: 'Tag da imagem Docker recém-construída (SHA curta)'
       dockerhub_repo:
         required: true
         type: string
@@ -23,57 +23,75 @@ on:
       app_config_path:
         required: true
         type: string
-        description: Caminho para o deployment-config.yaml no repositório chamador
+        description: 'Caminho para o deployment-config.yaml no repositório chamador (contém as configurações de infra/Helm)'
     secrets:
       GITOPS_TOKEN:
         required: true
-        description: Token com permissão de escrita no Repositório GitOps
+        description: 'Token com permissão de escrita no Repositório GitOps (lrios-gitops)'
 
 jobs:
   update-gitops:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Permissão necessária para o checkout/push do GitOps Repo
+      # Permissão necessária no job chamador (ci.yml) para passar o GITHUB_TOKEN
+      contents: write 
 
     steps:
-      # 1. Checkout do Repositório GitOps (CORREÇÃO: Usar GITOPS_TOKEN)
+      
+      # 1. Checkout do Repositório GitOps (CORREÇÃO: Usar o GITOPS_TOKEN para escrita)
       - name: Checkout GitOps Repo
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository_owner }}/lrios-gitops
-          token: ${{ secrets.GITOPS_TOKEN }} # <--- CORRETO
+          token: ${{ secrets.GITOPS_TOKEN }} # Usa o token de escrita
           path: gitops-config 
           
       # 2. Configuração do Git
       - name: Configure Git
         run: |
           cd gitops-config
-          # Usamos o user.name 'bot' para clareza no histórico de commit
           git config user.name "GitHub Actions Bot"
           git config user.email "ci-bot@${{ github.repository_owner }}.com"
-          
-      # 3. Checkout do Repo Chamador (OK: Usa github.token para acesso de leitura)
+
+      # 3. Checkout do Repositório Chamador para obter o arquivo de configuração
       - name: Checkout Repositório Chamador para Configuração
         uses: actions/checkout@v4
         with:
           path: app-config-source
           repository: ${{ github.event.repository.full_name }}
           ref: ${{ github.sha }}
+          # Usa o GITHUB_TOKEN (padrão) para acesso de leitura ao repo chamador
           token: ${{ github.token }}
-
-      - name: Generate Final values.yaml
+          
+      # 4. Instalar yq (Necessário para manipulação YAML estrutural)
+      - name: Instalar yq
+        run: sudo snap install yq --classic # Ou 'sudo apt-get install -y yq' em alguns runners
+        shell: bash
+        
+      # 5. CRIAÇÃO E ATUALIZAÇÃO ESTRUTURAL DO values.yaml
+      - name: Generate and Update values.yaml
+        shell: bash
         run: |
+          # Define o caminho de destino no GitOps Repo
           CONFIG_DIR="gitops-config/apps/${{ inputs.service_name }}/${{ inputs.target_env }}"
           CONFIG_PATH="${CONFIG_DIR}/values.yaml"
           
-          mkdir -p $CONFIG_DIR
-          cp app-config-source/${{ inputs.app_config_path }} $CONFIG_PATH
-          echo "" >> $CONFIG_PATH
-          echo "image:" >> $CONFIG_PATH
-          echo "  repository: ${{ inputs.dockerhub_repo }}" >> $CONFIG_PATH
-          echo "  tag: ${{ inputs.image_tag }}" >> $CONFIG_PATH
+          # Cria a estrutura de diretórios, se não existir (Correção de Path)
+          mkdir -p $CONFIG_DIR 
 
-      # 4. Commit e Push (CORREÇÃO: Usar GITOPS_TOKEN na URL para autenticação de push)
+          # 1. Copia o template de configuração (HPA, Ports, etc.)
+          cp app-config-source/${{ inputs.app_config_path }} $CONFIG_PATH
+
+          # 2. Atualiza a TAG e o REPOSITORY usando YQ (Substituição estrutural)
+          echo "Atualizando .image.repository para ${{ inputs.dockerhub_repo }}"
+          yq e ".image.repository = \"${{ inputs.dockerhub_repo }}\"" -i $CONFIG_PATH
+          
+          echo "Atualizando .image.tag para ${{ inputs.image_tag }}"
+          yq e ".image.tag = \"${{ inputs.image_tag }}\"" -i $CONFIG_PATH
+          
+          echo "Novo values.yaml gerado com sucesso."
+          
+      # 6. Commit e Push (CORREÇÃO: Injetar o GITOPS_TOKEN na URL para autenticação)
       - name: Commit and Push Changes
         run: |
           cd gitops-config
@@ -84,7 +102,7 @@ jobs:
               
               REMOTE_URL=$(git config --get remote.origin.url)
               
-              # AQUI é onde o token de escrita deve ser injetado: GITOPS_TOKEN
+              # Injeta o GITOPS_TOKEN na URL remota para autenticar o push (Correção de Auth 403)
               AUTH_URL="https://${{ secrets.GITOPS_TOKEN }}@${REMOTE_URL#https://}" 
               
               git push $AUTH_URL main 
