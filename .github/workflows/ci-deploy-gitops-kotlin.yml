@@ -69,27 +69,27 @@ jobs:
         shell: bash
         
       # 5. CRIAÇÃO E ATUALIZAÇÃO ESTRUTURAL DO values.yaml
-      - name: Generate and Update values.yaml
-        shell: bash
+      - name: Generate Final values.yaml
         run: |
-          # Define o caminho de destino no GitOps Repo
           CONFIG_DIR="gitops-config/apps/${{ inputs.service_name }}/${{ inputs.target_env }}"
           CONFIG_PATH="${CONFIG_DIR}/values.yaml"
           
-          # Cria a estrutura de diretórios, se não existir (Correção de Path)
-          mkdir -p $CONFIG_DIR 
-
-          # 1. Copia o template de configuração (HPA, Ports, etc.)
+          # Variável de entrada limpa (ex: a61de58)
+          CLEAN_TAG="${{ inputs.image_tag }}" 
+          
+          # 💥 CORREÇÃO ESSENCIAL: Recria a tag com o prefixo 'sha-'
+          TAG_COM_PREFIXO="sha-$CLEAN_TAG" 
+          
+          # ... (copia o arquivo base)
           cp app-config-source/${{ inputs.app_config_path }} $CONFIG_PATH
 
-          # 2. Atualiza a TAG e o REPOSITORY usando YQ (Substituição estrutural)
-          echo "Atualizando .image.repository para ${{ inputs.dockerhub_repo }}"
+          # ... (Atualiza o repositório)
           yq e ".image.repository = \"${{ inputs.dockerhub_repo }}\"" -i $CONFIG_PATH
           
-          echo "Atualizando .image.tag para ${{ inputs.image_tag }}"
-          yq e ".image.tag = \"${{ inputs.image_tag }}\"" -i $CONFIG_PATH
+          # 💥 Usa a tag prefixada para coincidir com o Docker Hub
+          yq e ".image.tag = \"$TAG_COM_PREFIXO\"" -i $CONFIG_PATH
           
-          echo "Novo values.yaml gerado com sucesso."
+          echo "Tag escrita no GitOps: $TAG_COM_PREFIXO"
           
       # 6. Commit e Push (CORREÇÃO: Injetar o GITOPS_TOKEN na URL para autenticação)
       - name: Commit and Push Changes
