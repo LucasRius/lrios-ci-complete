@@ -87,7 +87,17 @@ jobs:
           
           if ! git diff --cached --exit-code; then
               git commit -m "feat(${{ inputs.service_name }}): Automated deployment for ${{ inputs.target_env }} image: ${{ inputs.image_tag }}"
-              git push
+              
+              # CORREÇÃO ESSENCIAL: Injetar o GITOPS_TOKEN na URL remota para autenticação
+              
+              # 1. Captura a URL remota (geralmente será "origin")
+              REMOTE_URL=$(git config --get remote.origin.url)
+              
+              # 2. Formata a URL para inclusão do token: https://<token>@github.com/user/repo
+              AUTH_URL="https://${{ github.token }}@${REMOTE_URL#https://}"
+              
+              # 3. Executa o push usando a URL autenticada
+              git push $AUTH_URL main # Assumindo que seu branch principal é 'main'
           else
               echo "Não houve alterações no values.yaml, deploy ignorado."
           fi
