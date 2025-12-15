@@ -76,7 +76,7 @@ jobs:
       language_version: ${{ inputs.language_version }}
       cache_path: ${{ inputs.cache_path }}
   build-and-push-kotlin:
-    needs: [linting-kotlin, linting-scala]
+    needs: [linting-kotlin]
     name: Build e Envio para Docker Hub
     # Chama o workflow reutilizável
     uses: LucasRius/lrios-ci-complete/.github/workflows/ci-build-and-push-kotlin.yml@main
