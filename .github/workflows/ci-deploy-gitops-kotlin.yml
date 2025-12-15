@@ -1,0 +1,88 @@
+# Caminho: .github/workflows/reusable-deploy.yaml (No seu repo central/template)
+name: Reusable GitOps Update (DockerHub)
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+        description: 'Nome do microserviço (ex: servico-a)'
+      target_env:
+        required: true
+        type: string
+        description: 'Ambiente de destino (ex: prod)'
+      image_tag:
+        required: true
+        type: string
+        description: Tag da imagem Docker recém-construída'
+      dockerhub_repo:
+        required: true
+        type: string
+        description: 'Nome completo do repositório DockerHub (ex: username/servico-a)'
+      app_config_path:
+        required: true
+        type: string
+        description: Caminho para o deployment-config.yaml no repositório chamador
+    secrets:
+      GITOPS_TOKEN:
+        required: true
+        description: Token com permissão de escrita no Repositório GitOps
+
+jobs:
+  update-gitops:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Permissão necessária para o checkout/push do GitOps Repo
+
+    steps:
+      # 1. Checkout do Repositório GitOps (Usando o token de escrita)
+      - name: Checkout GitOps Repo
+        uses: actions/checkout@v4
+        with:
+          # Assumindo que o Repositório GitOps está na mesma organização
+          repository: ${{ github.repository_owner }}/lrios-gitops
+          token: ${{ secrets.GITOPS_TOKEN }} 
+          path: gitops-config 
+          
+      # 2. Configuração do Git
+      - name: Configure Git
+        run: |
+          cd gitops-config
+          git config user.name "GitHub Actions Bot"
+          git config user.email "ci-bot@${{ github.repository_owner }}.com"
+          
+      # 3. CRIAÇÃO DO values.yaml FINAL
+      - name: Generate Final values.yaml
+        uses: actions/checkout@v4 # Temporariamente checkout do repo chamador para pegar o config
+        with:
+          path: app-config-source
+          repository: ${{ github.event.repository.full_name }}
+          ref: ${{ github.sha }}
+
+      - name: Generate Final values.yaml
+        run: |
+          # Define o caminho de destino no GitOps Repo
+          CONFIG_PATH="gitops-config/apps/${{ inputs.service_name }}/${{ inputs.target_env }}/values.yaml"
+          
+          # 1. Copia as configurações do desenvolvedor (do repo chamador)
+          cp app-config-source/${{ inputs.app_config_path }} $CONFIG_PATH
+          
+          # 2. ANEXA as variáveis de CI (Imagem e Tag do DockerHub)
+          echo "" >> $CONFIG_PATH
+          echo "image:" >> $CONFIG_PATH
+          echo "  repository: ${{ inputs.dockerhub_repo }}" >> $CONFIG_PATH
+          echo "  tag: ${{ inputs.image_tag }}" >> $CONFIG_PATH
+
+      # 4. Commit e Push
+      - name: Commit and Push Changes
+        run: |
+          cd gitops-config
+          git add .
+          
+          if ! git diff --cached --exit-code; then
+              git commit -m "feat(${{ inputs.service_name }}): Automated deployment for ${{ inputs.target_env }} image: ${{ inputs.image_tag }}"
+              git push
+          else
+              echo "Não houve alterações no values.yaml, deploy ignorado."
+          fi
