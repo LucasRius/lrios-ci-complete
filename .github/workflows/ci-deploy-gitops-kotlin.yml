@@ -42,7 +42,7 @@ jobs:
         with:
           # Assumindo que o Repositório GitOps está na mesma organização
           repository: ${{ github.repository_owner }}/lrios-gitops
-          token: ${{ secrets.GITOPS_TOKEN }} 
+          token: ${{ github.token }}
           path: gitops-config 
           
       # 2. Configuração do Git
