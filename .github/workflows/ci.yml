@@ -40,13 +40,18 @@ on:
         description: ''
         type: string
         default: 'lint'
+      service-name:
+        description: ''
+        type: string
+      target-env:
+        description: ''
+        type: string
+      repo-env:
+        description: ''
+        type: string
+        default: 'lucasrios92/teste-kotlin'
 
-env:
-  SERVICE_NAME: teste-kotlin
-  TARGET_ENV: prd
-  # Configuração DockerHub
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-  DOCKERHUB_REPO: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.SERVICE_NAME }}
+
 
 
 jobs:
@@ -86,13 +91,14 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   deploy-gitops:
     name: Trigger GitOps Update
+    needs: build-and-push-kotlin
     uses: LucasRius/lrios-ci-complete/.github/workflows/ci-deploy-gitops-kotlin.yml@main
     with:
-      service_name: ${{ env.SERVICE_NAME }}
-      target_env: ${{ env.TARGET_ENV }}
-      image_tag: ${{ env.TAG }}
-      dockerhub_repo: ${{ env.DOCKERHUB_REPO }}
-      app_config_path: deployment-config.yaml # Caminho relativo dentro deste repo
+      service_name: ${{ inputs.service-name }}
+      target_env: ${{ inputs.target-env }}
+      image_tag: ${{ needs.build-and-push-kotlin.outputs.image_tag_sha }}
+      dockerhub_repo: ${{ inputs.repo-env }}
+      app_config_path: cicd/prd.yaml # Caminho relativo dentro deste repo
     secrets:
       # Passa o token de GitOps (armazenado neste repo) para o workflow central
       GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
