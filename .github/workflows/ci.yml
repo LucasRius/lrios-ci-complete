@@ -41,6 +41,14 @@ on:
         type: string
         default: 'lint'
 
+env:
+  SERVICE_NAME: teste-kotlin
+  TARGET_ENV: prd
+  # Configuração DockerHub
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_REPO: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.SERVICE_NAME }}
+
+
 jobs:
   linting-kotlin:
     if: ${{ inputs.language  == 'kotlin' }}
@@ -65,7 +73,7 @@ jobs:
   build-and-push-kotlin:
     name: Build e Envio para Docker Hub
     # Chama o workflow reutilizável
-    uses: LucasRius/lrios-ci-complete/.github/workflows/ci-build-and-push-koltin.yml@main
+    uses: LucasRius/lrios-ci-complete/.github/workflows/ci-build-and-push-kotlin.yml@main
 
     with:
       # Passa o nome da imagem e a versão do Java como inputs
@@ -76,3 +84,15 @@ jobs:
       # Passa as credenciais do Docker Hub como secrets
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  deploy-gitops:
+    name: Trigger GitOps Update
+    uses: LucasRius/lrios-ci-complete/.github/workflows/ci-deploy-gitops-kotlin.yml@main
+    with:
+      service_name: ${{ env.SERVICE_NAME }}
+      target_env: ${{ env.TARGET_ENV }}
+      image_tag: ${{ env.TAG }}
+      dockerhub_repo: ${{ env.DOCKERHUB_REPO }}
+      app_config_path: deployment-config.yaml # Caminho relativo dentro deste repo
+    secrets:
+      # Passa o token de GitOps (armazenado neste repo) para o workflow central
+      GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
