@@ -99,5 +99,4 @@ jobs:
       image_tag: ${{ needs.build-and-push-kotlin.outputs.image_tag_sha }}
       dockerhub_repo: ${{ inputs.repo-env }}
       app_config_path: cicd/prd.yaml # Caminho relativo dentro deste repo
-    secrets: 
-      GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+    secrets: inherit

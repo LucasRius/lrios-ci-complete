@@ -36,25 +36,25 @@ jobs:
       contents: write # Permissão necessária para o checkout/push do GitOps Repo
 
     steps:
-      # 1. Checkout do Repositório GitOps (Usando o token de escrita)
+      # 1. Checkout do Repositório GitOps (CORREÇÃO: Usar GITOPS_TOKEN)
       - name: Checkout GitOps Repo
         uses: actions/checkout@v4
         with:
-          # Assumindo que o Repositório GitOps está na mesma organização
           repository: ${{ github.repository_owner }}/lrios-gitops
-          token: ${{ secrets.GITOPS_TOKEN }}
+          token: ${{ secrets.GITOPS_TOKEN }} # <--- CORRETO
           path: gitops-config 
           
       # 2. Configuração do Git
       - name: Configure Git
         run: |
           cd gitops-config
+          # Usamos o user.name 'bot' para clareza no histórico de commit
           git config user.name "GitHub Actions Bot"
           git config user.email "ci-bot@${{ github.repository_owner }}.com"
           
-      # 3. CRIAÇÃO DO values.yaml FINAL
-      - name: Generate Final values.yaml
-        uses: actions/checkout@v4 # Temporariamente checkout do repo chamador para pegar o config
+      # 3. Checkout do Repo Chamador (OK: Usa github.token para acesso de leitura)
+      - name: Checkout Repositório Chamador para Configuração
+        uses: actions/checkout@v4
         with:
           path: app-config-source
           repository: ${{ github.event.repository.full_name }}
@@ -63,23 +63,17 @@ jobs:
 
       - name: Generate Final values.yaml
         run: |
-          
-          # Define o caminho de destino no GitOps Repo
           CONFIG_DIR="gitops-config/apps/${{ inputs.service_name }}/${{ inputs.target_env }}"
-          CONFIG_PATH="gitops-config/apps/${{ inputs.service_name }}/${{ inputs.target_env }}/values.yaml"
-
+          CONFIG_PATH="${CONFIG_DIR}/values.yaml"
+          
           mkdir -p $CONFIG_DIR
-          
-          # 1. Copia as configurações do desenvolvedor (do repo chamador)
           cp app-config-source/${{ inputs.app_config_path }} $CONFIG_PATH
-          
-          # 2. ANEXA as variáveis de CI (Imagem e Tag do DockerHub)
           echo "" >> $CONFIG_PATH
           echo "image:" >> $CONFIG_PATH
           echo "  repository: ${{ inputs.dockerhub_repo }}" >> $CONFIG_PATH
           echo "  tag: ${{ inputs.image_tag }}" >> $CONFIG_PATH
 
-      # 4. Commit e Push
+      # 4. Commit e Push (CORREÇÃO: Usar GITOPS_TOKEN na URL para autenticação de push)
       - name: Commit and Push Changes
         run: |
           cd gitops-config
@@ -88,16 +82,12 @@ jobs:
           if ! git diff --cached --exit-code; then
               git commit -m "feat(${{ inputs.service_name }}): Automated deployment for ${{ inputs.target_env }} image: ${{ inputs.image_tag }}"
               
-              # CORREÇÃO ESSENCIAL: Injetar o GITOPS_TOKEN na URL remota para autenticação
-              
-              # 1. Captura a URL remota (geralmente será "origin")
               REMOTE_URL=$(git config --get remote.origin.url)
               
-              # 2. Formata a URL para inclusão do token: https://<token>@github.com/user/repo
-              AUTH_URL="https://${{ github.token }}@${REMOTE_URL#https://}"
+              # AQUI é onde o token de escrita deve ser injetado: GITOPS_TOKEN
+              AUTH_URL="https://${{ secrets.GITOPS_TOKEN }}@${REMOTE_URL#https://}" 
               
-              # 3. Executa o push usando a URL autenticada
-              git push $AUTH_URL main # Assumindo que seu branch principal é 'main'
+              git push $AUTH_URL main 
           else
               echo "Não houve alterações no values.yaml, deploy ignorado."
           fi
