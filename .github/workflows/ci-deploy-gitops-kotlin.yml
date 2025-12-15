@@ -59,6 +59,7 @@ jobs:
           path: app-config-source
           repository: ${{ github.event.repository.full_name }}
           ref: ${{ github.sha }}
+          token: ${{ github.token }}
 
       - name: Generate Final values.yaml
         run: |
