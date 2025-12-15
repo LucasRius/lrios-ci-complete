@@ -63,8 +63,12 @@ jobs:
 
       - name: Generate Final values.yaml
         run: |
+          
           # Define o caminho de destino no GitOps Repo
+          CONFIG_DIR="gitops-config/apps/${{ inputs.service_name }}/${{ inputs.target_env }}"
           CONFIG_PATH="gitops-config/apps/${{ inputs.service_name }}/${{ inputs.target_env }}/values.yaml"
+
+          mkdir -p $CONFIG_DIR
           
           # 1. Copia as configurações do desenvolvedor (do repo chamador)
           cp app-config-source/${{ inputs.app_config_path }} $CONFIG_PATH
