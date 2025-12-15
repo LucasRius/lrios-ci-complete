@@ -73,7 +73,7 @@ jobs:
         shell: bash
         run: |
           # Define o caminho de destino no GitOps Repo
-          CONFIG_DIR="gitops-config/${{ inputs.service_name }}/${{ inputs.target_env }}"
+          CONFIG_DIR="gitops-config/apps/${{ inputs.service_name }}/${{ inputs.target_env }}"
           CONFIG_PATH="${CONFIG_DIR}/values.yaml"
           
           # Cria a estrutura de diretórios, se não existir (Correção de Path)

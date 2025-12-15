@@ -98,5 +98,5 @@ jobs:
       target_env: ${{ inputs.target-env }}
       image_tag: ${{ needs.build-and-push-kotlin.outputs.image_tag_sha }}
       dockerhub_repo: ${{ inputs.repo-env }}
-      app_config_path: cicd/prd.yaml # Caminho relativo dentro deste repo
+      app_config_path: cicd/prd.yaml # Caminho de onde esta o arquivo de configuracao manifesto helm 
     secrets: inherit
