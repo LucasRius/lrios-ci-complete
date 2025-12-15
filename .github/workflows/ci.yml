@@ -86,10 +86,7 @@ jobs:
       language_version: ${{ inputs.language_version }}
       image_name: 'lucasrios92/teste-kotlin' # <<-- MUDAR AQUI
 
-    secrets:
-      # Passa as credenciais do Docker Hub como secrets
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    secrets: inherit
   deploy-gitops:
     name: Trigger GitOps Update
     permissions:
@@ -102,6 +99,4 @@ jobs:
       image_tag: ${{ needs.build-and-push-kotlin.outputs.image_tag_sha }}
       dockerhub_repo: ${{ inputs.repo-env }}
       app_config_path: cicd/prd.yaml # Caminho relativo dentro deste repo
-    secrets:
-      # Passa o token de GitOps (armazenado neste repo) para o workflow central
-      GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+    secrets: inherit
